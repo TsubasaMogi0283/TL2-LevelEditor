@@ -9,11 +9,27 @@ import json
 
 
 from bpy.props import (EnumProperty,BoolProperty)
+
 #同じlevel_editorフォルダに入っているpyファイルからインポートするよ
 from .stretch_vertex import MYADDON_OT_stretch_vertex
 from .create_ico_sphere import MYDDON_OT_create_ico_sphere
 from .export_scene import MYADDON_OT_export_scene
 
+#ファイル名の追加
+from .add_filename import MYADDON_OT_add_filename
+from .filename import OBJECT_PT_filename
+
+#オブジェクトタイプの設定
+from .add_select_object_type import MYADDON_OT_add_select_object_type
+from .select_object_type import OBJECT_OT_select_object_type
+
+#オーディオ
+from .add_audio_information import MYADDON_OT_add_audio_information
+from .audio_information import OBJECT_PT_audio_information
+#コライダー
+from .add_collider import MYADDON_OT_add_collider
+from .draw_collider import DrawCollider
+from .collider import OBJECT_PT_collider
 
 #Blenderに登録するアドオン情報
 bl_info = {
@@ -47,244 +63,9 @@ def draw_menu_manual(self,context):
     #区切り線
     self.layout.separator()
     self.layout.operator("wm.url_open_preset",text="Manual2",icon="HELP")
-    
-    
 
 
 
-
-
-#パネル ファイル名
-class OBJECT_PT_file_name(bpy.types.Panel):
-    """オブジェクトのファイルネームパネル"""
-    bl_idname="OBJECT_PT_file_name"
-    bl_label="モデルのファイル名"
-    bl_space_type="PROPERTIES"
-    bl_region_type="WINDOW"
-    bl_context="object"
-
-    #サブメニューの描画
-    def draw(self,context):
-        #パネルに項目を追加
-        if "file_name" in context.object:
-            #すでにプロパティがあれば、プロパティを表示
-            self.layout.prop(context.object,'["file_name"]',text=self.bl_label)
-        else:
-            #プロパティが無ければ、プロパティ追加ボタンを表示
-            self.layout.operator(MYADDON_OT_add_filename.bl_idname)
-
-#オペレータ カスタムプロパティ['file_name']追加
-class MYADDON_OT_add_filename(bpy.types.Operator):
-    bl_idname="myaddon.myaddon_ot_add_filename"
-    bl_label="ファイル名を追加"
-    bl_description="['file_name']カスタムプロパティを追加します"
-    bl_options={"REGISTER","UNDO"}
-
-    #context...今選択中の
-    def execute(self,context):
-        #['file_name']カスタムプロパティを追加
-        context.object["file_name"]=""
-
-        return {"FINISHED"}
-
-#オペレータ カスタムプロパティ['object_type']追加
-class MYADDON_OT_select_object_type(bpy.types.Operator):
-    bl_idname="myaddon.myaddon_ot_select_object_type"
-    bl_label="オブジェクトのタイプを 選択"
-    bl_description="['object_type']カスタムプロパティを追加します"
-    bl_options={"REGISTER","UNDO"}
-
-    #context...今選択中の
-    def execute(self,context):
-        #['file_name']カスタムプロパティを追加
-        context.object["object_type"]="Stage"
-
-        return {"FINISHED"}
-
-#オブジェクトの種類を選択
-class OBJECT_OT_select_object_type(bpy.types.Panel):
-    bl_idname="OBJECT_PT_object_type"
-    bl_label="ObjectType"
-    bl_space_type="PROPERTIES"
-    bl_region_type="WINDOW"
-    bl_context="object"
-
-    #サブメニューの描画
-    def draw(self,context):
-        #パネルに項目を追加
-        if "object_type" in context.object:
-            #すでにプロパティがあれば、プロパティを表示
-            self.layout.prop(context.scene, "objectTypeSelection", text="種類")
-        else:
-            #プロパティが無ければ、プロパティ追加ボタンを表示
-            self.layout.operator(MYADDON_OT_select_object_type.bl_idname)
-
-#region Collider
-
-#オペレータ カスタムプロパティ['collider']追加
-class MYADDON_OT_add_collider(bpy.types.Operator):
-    bl_idname="myddon.myaddon_ot_add_collider"
-    bl_label="コライダー 追加"
-    bl_description="['collider']カスタムプロパティを追加します"
-    bl_options={"REGISTER","UNDO"}
-
-
-    def execute(self,context):
-        
-        #['collider']カスタムプロパティを追加
-        context.object["collider_type"]="BOX"
-        context.object["collider_center"]=mathutils.Vector((0,0,0))
-        context.object["collider_size"]=mathutils.Vector((1,1,1))
-
-        return {"FINISHED"}
-
-#パネル コライダー
-class OBJECT_PT_collider(bpy.types.Panel):
-    bl_idname="OBJECT_PT_collider"
-    bl_label="Collider"
-    bl_space_type="PROPERTIES"
-    bl_region_type="WINDOW"
-    bl_context="object"
-
-    def draw(self,context):
-        #パネルに項目を追加
-        if "collider_type" in context.object:
-
-            #すでにプロパティがあれば、プロパティを表示
-            self.layout.prop(context.object,'["collider_type"]',text="Type")
-            self.layout.prop(context.object,'["collider_center"]',text="Center")
-            self.layout.prop(context.object,'["collider_size"]',text="Size")
-        else:
-            #プロパティが無ければ、プロパティ追加ボタンを表示
-            self.layout.operator(MYADDON_OT_add_collider.bl_idname)
-
-#コライダー描画
-class DrawCollider:
-
-    #描画ハンドル
-    handle=None
-    
-    # 3Dビューに登録する描画関数
-    def draw_collider():
-        
-        # 頂点データ
-        vertices = {"pos": []}
-        # インデックスデータ
-        indices = []
-        
-        # 基本の立方体の頂点オフセット（立方体の中心からの相対位置）
-        offsets = [
-            [-0.5, -0.5, -0.5],  # 左下前
-            [+0.5, -0.5, -0.5],  # 右下前
-            [-0.5, +0.5, -0.5],  # 左上前
-            [+0.5, +0.5, -0.5],  # 右上前
-            [-0.5, -0.5, +0.5],  # 左下奥
-            [+0.5, -0.5, +0.5],  # 右下奥
-            [-0.5, +0.5, +0.5],  # 左上奥
-            [+0.5, +0.5, +0.5],  # 右上奥
-        ]
-
-        # 現在シーンのオブジェクトリストを走査
-        for object in bpy.context.scene.objects:
-            # コライダープロパティが無ければ、描画をスキップ
-            if not ("collider_center" in object and "collider_size" in object):
-                continue
-
-            # オブジェクトのコライダー中心とサイズを取得
-            collider_center = mathutils.Vector(object["collider_center"])
-            collider_size = mathutils.Vector(object["collider_size"])
-
-            # スケールを無視した位置と回転のみの行列を作成
-            rotation_matrix = object.matrix_world.to_3x3().normalized().to_4x4()
-            translation_matrix = mathutils.Matrix.Translation(object.location)
-            transform_matrix = translation_matrix @ rotation_matrix  # 位置と回転のみの行列
-
-            # 追加前の頂点数
-            start = len(vertices["pos"])
-
-            # 立方体の8頂点分を回す
-            for offset in offsets:
-                # コライダーサイズとオフセットに基づく頂点位置
-                pos = collider_center + mathutils.Vector(
-                    (offset[0] * collider_size[0],
-                     offset[1] * collider_size[1],
-                     offset[2] * collider_size[2])
-                )
-                
-                # スケール無視したワールド座標に変換
-                pos = transform_matrix @ pos
-
-                # 頂点データリストに座標を追加
-                vertices['pos'].append(pos)
-
-            # 前面を構成する辺の頂点インデックスデータ
-            indices.append([start + 0, start + 1])
-            indices.append([start + 2, start + 3])
-            indices.append([start + 0, start + 2])
-            indices.append([start + 1, start + 3])
-            # 奥面を構成する辺の頂点インデックス
-            indices.append([start + 4, start + 5])
-            indices.append([start + 6, start + 7])
-            indices.append([start + 4, start + 6])
-            indices.append([start + 5, start + 7])
-            # 前と奥を繋ぐ辺の頂点インデックス
-            indices.append([start + 0, start + 4])
-            indices.append([start + 1, start + 5])
-            indices.append([start + 2, start + 6])
-            indices.append([start + 3, start + 7])
-
-        # シェーダーを取得して描画を設定
-        shader = gpu.shader.from_builtin("UNIFORM_COLOR")
-        batch = gpu_extras.batch.batch_for_shader(shader, "LINES", vertices, indices=indices)
-
-        # シェーダのパラメータ設定
-        color = [0.5, 1.0, 1.0, 1.0]
-        shader.bind()
-        shader.uniform_float("color", color)
-        # 描画
-        batch.draw(shader)
-
-#endregion
-
-#オーディオ
-class MYADDON_OT_add_audio_filename(bpy.types.Operator):
-    bl_idname="myaddon.myaddon_ot_add_audio_filename"
-    bl_label="オーディオのファイル名を追加"
-    bl_description="['audio_file_name']カスタムプロパティを追加します"
-    bl_options={"REGISTER","UNDO"}
-
-    #context...今選択中の
-    def execute(self,context):
-        #['file_name']カスタムプロパティを追加
-        context.object["audio_file_name"]=""
-        context.object["audio_type"]="BGM"
-        context.object["audio_loop"]=True
-        context.object["audio_on_area"]=True
-        
-        return {"FINISHED"}
-
-#パネル
-class AUDIO_PT_fileName(bpy.types.Panel):
-    bl_idname="OBJECT_PT_audio"
-    bl_label="Audio"
-    bl_space_type="PROPERTIES"
-    bl_region_type="WINDOW"
-    bl_context="object"
-
-    #サブメニューの描画
-    def draw(self,context):
-        #パネルに項目を追加
-        if "audio_file_name" in context.object:
-            #すでにプロパティがあれば、プロパティを表示
-            self.layout.prop(context.object,'["audio_file_name"]',text="ファイル名")
-            self.layout.prop(context.scene, "cm_prop_enum", text="種類")
-            self.layout.prop(context.object, '["audio_loop"]', text="ループ")
-            self.layout.prop(context.object, '["audio_on_area"]', text="エリア上")
-        else:
-            #プロパティが無ければ、プロパティ追加ボタンを表示
-            #機能は同じでも違うものにしないと共有されてしまうことに気づいた
-            self.layout.operator(MYADDON_OT_add_audio_filename.bl_idname)
-        
 #トップバーの拡張メニュー
 class TOPBAR_MT_my_menu(bpy.types.Menu):
     #クラスの書き方はだいたいC++と同じだね
@@ -318,13 +99,13 @@ classes=(
     MYADDON_OT_export_scene,
     TOPBAR_MT_my_menu,
     MYADDON_OT_add_filename,
-    OBJECT_PT_file_name,
+    OBJECT_PT_filename,
     MYADDON_OT_add_collider,
     OBJECT_PT_collider,
-    AUDIO_PT_fileName,
-    MYADDON_OT_add_audio_filename,
+    OBJECT_PT_audio_information,
+    MYADDON_OT_add_audio_information,
     OBJECT_OT_select_object_type,
-    MYADDON_OT_select_object_type,
+    MYADDON_OT_add_select_object_type,
     )
 
 
@@ -418,9 +199,8 @@ def register() :
     #メニューに項目を追加
     bpy.types.TOPBAR_MT_editor_menus.append(TOPBAR_MT_my_menu.submenu)
     #3Dビューに描画関数を追加
-    DrawCollider.handle=bpy.types.SpaceView3D.draw_handler_add(DrawCollider.draw_collider,(),"WINDOW","POST_VIEW")
+    DrawCollider.handle=bpy.types.SpaceView3D.draw_handler_add(DrawCollider.draw,(),"WINDOW","POST_VIEW")
     print("レベルエディタが有効化されました")
-
 
 #アドオン無効化時コールバック
 def unregister() :
