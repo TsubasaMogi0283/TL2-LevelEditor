@@ -1,5 +1,5 @@
 import bpy
-from .add_collider import MYADDON_OT_add_collider
+from .collider_ot import MYADDON_OT_add_collider
 
 #パネル コライダー
 class OBJECT_PT_collider(bpy.types.Panel):

@@ -78,6 +78,9 @@ class DrawCollider:
             indices.append([start + 2, start + 6])
             indices.append([start + 3, start + 7])
 
+
+        
+
         # シェーダーを取得して描画を設定
         shader = gpu.shader.from_builtin("UNIFORM_COLOR")
         batch = gpu_extras.batch.batch_for_shader(shader, "LINES", vertices, indices=indices)

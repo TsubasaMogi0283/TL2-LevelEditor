@@ -27,9 +27,12 @@ from .select_object_type import OBJECT_OT_select_object_type
 from .add_audio_information import MYADDON_OT_add_audio_information
 from .audio_information import OBJECT_PT_audio_information
 #コライダー
-from .add_collider import MYADDON_OT_add_collider
+from .collider_ot import MYADDON_OT_add_collider
 from .draw_collider import DrawCollider
-from .collider import OBJECT_PT_collider
+from .collider_pt import OBJECT_PT_collider
+#非表示設定
+from .display_pt import MYADDON_PT_invisible_option
+from .display_ot import MYADDON_OT_invisible_option
 
 
 #Blenderに登録するアドオン情報
@@ -69,6 +72,7 @@ def draw_menu_manual(self,context):
     self.layout.operator("wm.url_open_preset",text="Manual2",icon="HELP")
 
 
+
 #Blenderに登録するクラスリスト
 #順番は関係無いよ
 classes=(
@@ -84,6 +88,9 @@ classes=(
     MYADDON_OT_add_audio_information,
     OBJECT_OT_select_object_type,
     MYADDON_OT_add_select_object_type,
+
+    MYADDON_OT_invisible_option,
+    MYADDON_PT_invisible_option,
     )
 
 
@@ -124,6 +131,9 @@ def init_props():
         items=[
             ('ITEM_1', "Stage", "Stage"),
             ('ITEM_2', "Audio", "Audio"),
+            ('ITEM_3', "Player", "Player"),
+            ('ITEM_4', "NormalEnemy", "NormalEnemy"),
+            ('ITEM_5', "StrongEnemy", "StrongEnemy"),
         ],
         default='ITEM_1',
         update=update_object_type
@@ -156,6 +166,15 @@ def update_object_type(self, context):
         context.object["object_type"] = "Stage"
     elif enum_value == 'ITEM_2':
         context.object["object_type"] = "Audio"
+    elif enum_value == 'ITEM_3':
+        context.object["object_type"] = "Player"
+    elif enum_value == 'ITEM_4':
+        context.object["object_type"] = "NormalEnemy"
+    elif enum_value == 'ITEM_5':
+        context.object["object_type"] = "StrongEnemy"
+    
+        
+        
 
 
 # プロパティを削除

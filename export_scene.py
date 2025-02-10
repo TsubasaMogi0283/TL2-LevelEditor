@@ -71,6 +71,7 @@ class MYADDON_OT_export_scene(bpy.types.Operator,bpy_extras.io_utils.ExportHelpe
             temp_str%=(object["collider_size"][0],object["collider_size"][1],object["collider_size"][2])
             self.write_and_print(file,temp_str)
         
+        
 
         self.write_and_print(file,indent + 'END')
         self.write_and_print(file,'')
@@ -118,16 +119,20 @@ class MYADDON_OT_export_scene(bpy.types.Operator,bpy_extras.io_utils.ExportHelpe
         #カスタムプロパティ'file_name'
         if "file_name" in object:
             json_object["file_name"]=object["file_name"]
+        #カスタムプロパティ'object_type'
         if "object_type" in object:
             json_object["object_type"]=object["object_type"]
+        #カスタムプロパティ'audio_file_name'
         if "audio_file_name"in object:
             audio =dict()
             audio["file_name"]=object["audio_file_name"]
             audio["type"]=object["audio_type"]
             audio["on_area"]=object["audio_on_area"]
             audio["loop"]=object["audio_loop"]
-            
             json_object["audio"]=audio
+        #カスタムプロパティ'is_invisible'
+        if "is_invisible" in object:
+            json_object["is_invisible"]=object["is_invisible"]
         #カスタムプロパティ'collider'
         if "collider_type" in object:
             collider=dict()
